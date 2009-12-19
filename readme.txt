@@ -55,7 +55,7 @@ Each Comment object has the following attributes:
     * upvotes      - number of upvotes
     * downvotes    - number of downvotes
     * score        - upvotes-downvotes
-    * time_utc     - utc time in unix tiem format
+    * time_utc     - utc time in unix time format
     * time_human   - human readable time
     * link_title   - link title
     * link_id      - id of the link
