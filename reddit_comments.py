@@ -131,16 +131,17 @@ def print_comments(comments):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if not args:
-        print >>sys.stderr, "Usage: %s <username>" % sys.argv[0]
+    if len(args) < 2:
+        print >>sys.stderr, "Usage: %s <username> [number of comment pages]" % sys.argv[0]
         sys.exit(1)
 
-    user = args[0]
+    user, pages = args
+    pages = int(pages)
 
     def callback(page_nr):
         print >>sys.stderr, "Getting page %d of %s's comments" % (page_nr, user)
 
-    comments = get_all_comments(user, callback)
+    comments = get_comments(user, pages, callback)
     print >>sys.stderr, "Got %d comments" % len(comments)
     print_comments(comments)
 
