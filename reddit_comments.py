@@ -22,12 +22,12 @@ class Comment(object):
     Encapsulates the information about a comment
 
     After the object has been constructed, it contains the following attrs:
-    * author       - username of author
-    * comment      - comment plain text
+    * author       - username of the author
+    * comment      - comment in plain text
     * upvotes      - number of upvotes
     * downvotes    - number of downvotes
     * score        - upvotes-downvotes
-    * time_utc     - utc time in unix tiem format
+    * time_utc     - utc time in unix time format
     * time_human   - human readable time
     * link_title   - link title
     * link_id      - id of the link
@@ -48,12 +48,14 @@ def get_comments(user, pages=1, print_callback=None):
 
     comments = []
     for page_nr in count(1):
-        if page_nr > pages and pages != -1:
-            break
+        if 0 < pages < page_nr: break
         print_callback(page_nr)
         comment_page = get_page(comment_url)
+        if comment_page is None:
+            print >>sys.stderr, "Error while getting comment page."
+            break
         comments.extend(extract_comments(comment_page))
-        comment_url  = get_next_page_url(comment_page, base_url)
+        comment_url = get_next_page_url(comment_page, base_url)
         if not comment_url: break
     return comments
 
@@ -93,23 +95,28 @@ def get_next_page_url(comment_page, base_url):
     after = comment_struct['data']['after']
     if after: return base_url + '?after=' + after
 
-def get_page(url, timeout=10):
+def get_page(url, timeout=10, tries=5):
     """
     Gets and returns a web page at url with timeout 'timeout'.
+    Retries tries times before giving up.
     """
-
     old_timeout = socket.setdefaulttimeout(timeout)
-
     request = urllib2.Request(url)
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)')
 
     try:
-        response = urllib2.urlopen(request)
-        content = response.read()
+        for i in range(tries):
+            try:
+                response = urllib2.urlopen(request)
+                content  = response.read()
+                return content
+            except KeyboardInterrupt:
+                return
+            except:
+                print >>sys.stderr, "Failed getting %s, retrying." % url
+                pass
     finally:
         socket.setdefaulttimeout(old_timeout)
-
-    return content
 
 def get_all_comments(user, print_callback):
     """ Gets all comments for user """
